@@ -37,14 +37,14 @@ def connect(params_dic):
 
 
 #Отпаравляет сообщения в Telegram Bot
-def send_msg(text,chat_id):
+def send_msg(text):
    token = "2092288888:AAHZbw3rTu0YKE0h2ZZAetOe9vgn_eqWLS4"
-   #chat_id = "-1001395140536"
+   chat_id = "146151553"
    url_req = "https://api.telegram.org/bot" + token + "/sendMessage" + "?chat_id=" + chat_id + "&text=" + text
    results = requests.get(url_req)
 
-chat_id_1 ='-1001395140536'
-chat_id_2 ='-1001485624593'
+
+
 
 
 date_range = 20
@@ -66,6 +66,5 @@ data_1 = pd.read_sql_query(query,conn)
 
 
 message = "Test"
-send_msg(message,chat_id_1)
-send_msg(message,chat_id_2)
+send_msg(message)
  

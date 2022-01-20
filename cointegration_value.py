@@ -9,7 +9,7 @@ import pytz
 import statsmodels
 import statsmodels.api as sm
 from statsmodels.tsa.stattools import coint, adfuller,ccf
-
+import requests
 
 param_dic = {
     "host"      : "207.180.239.158",
@@ -59,7 +59,12 @@ def execute_mogrify(conn, df, table):
     print('{} done'.format(table))
     cursor.close()
 
-
+#Отпаравляет сообщения в Telegram Bot
+def send_msg(text):
+   token = "2092288888:AAHZbw3rTu0YKE0h2ZZAetOe9vgn_eqWLS4"
+   chat_id = "146151553"
+   url_req = "https://api.telegram.org/bot" + token + "/sendMessage" + "?chat_id=" + chat_id + "&text=" + text
+   results = requests.get(url_req)
 
 if __name__ == "__main__":
 
@@ -130,6 +135,10 @@ if __name__ == "__main__":
                         conn = connect(param_dic) # connect to the database
                         execute_mogrify(conn, data_stats_df, table)
                         conn.close()
+
+                        message = "Data updated"
+                        send_msg(message)
+ 
 
                     except (Exception) as error:
                         print(error)
