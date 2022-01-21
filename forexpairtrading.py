@@ -165,7 +165,7 @@ app.layout = serve_layout
         Input("region-filter", "value"),
         Input("type-filter", "value"),
         Input("date-range", "start_date"),
-        Input("date-range", "end_date"),    
+        Input("date-range", "end_date"),  
     ],
     
 )

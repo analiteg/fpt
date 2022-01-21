@@ -72,7 +72,7 @@ if __name__ == "__main__":
                     conn = connect(param_dic) # connect to the database
                     cointegration = 0.06
                     correlation = 0.8
-                    query= "SELECT a.pair1,a.pair2,a.correlation,a.cointegration,a.dt,a.send_signal FROM ticks.data_stats a, ticks.data_stats b WHERE a.cointegration < b.cointegration AND a.correlation = b.correlation AND a.correlation > {} AND a.cointegration < {} AND a.dt >= date('{}') ORDER BY a.dt DESC; ".format(correlation,cointegration,today)
+                    query= "SELECT a.pair1,a.pair2,a.correlation,a.cointegration,a.dt,a.send_signal, a.go_signal FROM ticks.data_stats a, ticks.data_stats b WHERE a.cointegration < b.cointegration AND a.correlation = b.correlation AND a.correlation > {} AND a.cointegration < {} AND a.dt >= date('{}') ORDER BY a.dt DESC; ".format(correlation,cointegration,today)
                     tickers = pd.read_sql_query(query,conn)
                     conn.close()
                 except (Exception) as error:
@@ -93,9 +93,10 @@ if __name__ == "__main__":
                     pair1 = tickers['pair1'].iloc[i]
                     pair2 = tickers['pair2'].iloc[i]
                     send_signal = tickers['send_signal'].iloc[i]
+                    go_signal = tickers['go_signal'].iloc[i]
 
                     
-
+                    #Ready signal
                     if send_signal == 0:
 
                         #Spread data
@@ -120,13 +121,54 @@ if __name__ == "__main__":
                             if ad_fuller < fuler_max:
 
                                 if float('%.2f'%(z_score.iloc[-1])) > 0:
-                                    spread_value = "BUY {} - SELL {} Spread deviation =  {}\n".format(pair1,pair2,float('%.2f'%(z_score.iloc[-1])))
+                                    spread_value = "READY to BUY {} - SELL {} Spread deviation =  {}\n".format(pair1,pair2,float('%.2f'%(z_score.iloc[-1])))
                                 else:
-                                    spread_value = "SELL {} - BUY {} Spread deviation =  {}\n".format(pair1,pair2,float('%.2f'%(z_score.iloc[-1])))
+                                    spread_value = "READY to SELL {} - BUY {} Spread deviation =  {}\n".format(pair1,pair2,float('%.2f'%(z_score.iloc[-1])))
 
                                 conn = connect(param_dic) # connect to the database
                                 cursor = conn.cursor()
                                 query="UPDATE ticks.data_stats SET send_signal = 1 WHERE pair1 LIKE('{}') AND pair2 LIKE('{}') AND dt >='{}';".format(pair1,pair2,end_date)
+                                cursor.execute(query)
+                                conn.commit()
+                                conn.close()
+
+                                if len(spread_value) > 0:
+                                    str1 = ''.join(map(str,spread_value))
+                                    message = str1
+                                    send_msg(message,chat_id_1)
+                                    send_msg(message,chat_id_2)
+                    #GO signal
+                    if send_signal == 1 and go_signal == 0:
+
+                        #Spread data
+                        spread_max = 2
+                        spread_min = -2
+                        fuler_max = 0.03
+
+                        S1 = np.log(df[pair1])
+                        S2 = np.log(df[pair2])
+                        S1 = sm.add_constant(S1)
+                        results = sm.OLS(S2, S1).fit()
+                        S1 = S1[pair1]
+                        b = results.params[pair1]
+                        spread = S2 - b * S1
+                        z_score = zscore(spread)
+                        
+
+                        if z_score.iloc[-1] < spread_max or z_score.iloc[-1] > spread_min:
+
+                            ad_fuller = float('%.5f'%(adfuller(spread)[1]))
+
+                            if ad_fuller < fuler_max:
+
+                                if float('%.2f'%(z_score.iloc[-1])) > 0:
+                                    spread_value = "GO to BUY {} - SELL {} Spread deviation =  {}\n".format(pair1,pair2,float('%.2f'%(z_score.iloc[-1])))
+                                else:
+                                    spread_value = "GO to SELL {} - BUY {} Spread deviation =  {}\n".format(pair1,pair2,float('%.2f'%(z_score.iloc[-1])))
+
+                                conn = connect(param_dic) # connect to the database
+                                cursor = conn.cursor()
+                                query="UPDATE ticks.data_stats SET go_signal = 1 WHERE pair1 LIKE('{}') AND pair2 LIKE('{}') AND dt >='{}';".format(pair1,pair2,end_date)
                                 cursor.execute(query)
                                 conn.commit()
                                 conn.close()

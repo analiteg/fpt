@@ -117,7 +117,7 @@ if __name__ == "__main__":
                                     pvalue =float('%.5f'%(pvalue_result[1]))
                                     corel_pearson = ccf(S1, S2, adjusted=True,fft=True)
                                     corelation_result = float('%.5f'%(corel_pearson[0]))
-                                    print((keys[i], keys[j],pvalue,corelation_result))
+                                    
                                     
                                     pairs.append( "{},{},{},{}".format(keys[i], keys[j],pvalue,corelation_result))
                                     pairs_df.append((keys[i],keys[j],pvalue,corelation_result,end_date))
