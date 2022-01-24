@@ -114,7 +114,7 @@ if __name__ == "__main__":
                         z_score = zscore(spread)
                         
 
-                        if z_score.iloc[-1] > spread_max or z_score.iloc[-1] < spread_min:
+                        if z_score.iloc[-1] > spread_max  or z_score.iloc[-1] < spread_min:
 
                             ad_fuller = float('%.5f'%(adfuller(spread)[1]))
 
@@ -155,7 +155,7 @@ if __name__ == "__main__":
                         z_score = zscore(spread)
                         
 
-                        if z_score.iloc[-1] < spread_max or z_score.iloc[-1] > spread_min:
+                        if (z_score.iloc[-1] > 0 and z_score.iloc[-1] < spread_max)  or (z_score.iloc[-1] > spread_min and z_score.iloc[-1] < 0):
 
                             ad_fuller = float('%.5f'%(adfuller(spread)[1]))
 
